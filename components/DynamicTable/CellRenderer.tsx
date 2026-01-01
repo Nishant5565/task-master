@@ -141,62 +141,37 @@ export default function CellRenderer({
     );
   }
 
-  // --- Select / Status Field (Using Shadcn Select) ---
+  // --- Select / Status Field (Custom Dropdown) ---
   if (field.type === "select" || field.type === "status") {
-    console.log(`[CellRenderer] ${field.label}:`, {
-      value,
-      options: field.options,
-    });
-
     const selectedOption = (field.options as SelectOption[])?.find(
       (o) => o.id === value
     );
 
     return (
-      <div className="w-full h-full" onClick={(e) => e.stopPropagation()}>
-        <Select
+      <div className="relative w-full h-full flex items-center group">
+        <select
           value={value || ""}
-          onValueChange={(newValue) => {
-            console.log(
-              `[CellRenderer] ${field.label} changed:`,
-              value,
-              "→",
-              newValue
-            );
-            onChange(newValue);
-          }}
+          onChange={(e) => onChange(e.target.value)}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         >
-          <SelectTrigger className="w-full h-full border-none shadow-none bg-transparent focus:ring-2 focus:ring-indigo-500 focus:ring-inset px-3 text-sm rounded-none pointer-events-auto hover:bg-gray-100">
-            {selectedOption ? (
-              <span
-                className={`px-2 py-0.5 rounded text-xs font-medium ${selectedOption.color}`}
-              >
-                {selectedOption.label}
-              </span>
-            ) : (
-              <span className="text-gray-400 text-sm">Select...</span>
-            )}
-          </SelectTrigger>
-          <SelectContent>
-            {(field.options as SelectOption[])?.map((opt) => (
-              <SelectItem key={opt.id} value={opt.id}>
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-3 h-3 rounded-full ${
-                      opt.color.split(" ")[0]
-                    }`}
-                  />
-                  <span>{opt.label}</span>
-                </div>
-              </SelectItem>
-            ))}
-            {(!field.options || field.options.length === 0) && (
-              <div className="px-3 py-2 text-gray-400 text-xs">
-                No options defined
-              </div>
-            )}
-          </SelectContent>
-        </Select>
+          <option value="">Select...</option>
+          {(field.options as SelectOption[])?.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <div className="w-full h-full flex items-center px-3 pointer-events-none">
+          {selectedOption ? (
+            <span
+              className={`px-2 py-0.5 rounded text-xs font-medium ${selectedOption.color}`}
+            >
+              {selectedOption.label}
+            </span>
+          ) : (
+            <span className="text-gray-400 text-sm">Select...</span>
+          )}
+        </div>
       </div>
     );
   }
