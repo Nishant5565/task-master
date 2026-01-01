@@ -73,7 +73,7 @@ export default function DynamicTable({ projectId }: DynamicTableProps) {
   }, [projectId]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ callbackUrl: window.location.origin + "/login" });
   };
 
   const handleAddTask = async () => {
