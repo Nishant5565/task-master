@@ -25,6 +25,8 @@ export interface FieldDefinition {
   required?: boolean;
   options?: SelectOption[]; // For select/status types (enhanced from string[])
   width?: number; // Column width preference
+  bgColor?: string; // Optional background color class or hex
+  textColor?: string; // Optional text color class or hex
 }
 
 export interface TaskSchema {
@@ -33,8 +35,18 @@ export interface TaskSchema {
   fields: FieldDefinition[];
 }
 
+export interface CellStyle {
+  bold?: boolean;
+  fontSize?: number; // 12, 14, 16, 18
+  textColor?: string;
+  bgColor?: string;
+  align?: "left" | "center" | "right";
+  wrap?: boolean;
+}
+
 export interface TaskItem {
   _id?: string;
+  styles?: Record<string, CellStyle>; // key: fieldKey (or "_row" for row styles)
   [key: string]: any; // Dynamic data storage
 }
 
