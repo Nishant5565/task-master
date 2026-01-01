@@ -197,7 +197,8 @@ export default function DynamicTable({ projectId }: DynamicTableProps) {
             </DialogContent>
           </Dialog>
 
-          <FieldManager project={project} onUpdate={setProject} />
+          {/* <FieldManager project={project} onUpdate={setProject} /> */}
+          {/* NOTE: FieldManager now works with Groups, not Projects. This TableView is deprecated. */}
 
           <div className="h-6 w-px bg-border mx-2" />
 
