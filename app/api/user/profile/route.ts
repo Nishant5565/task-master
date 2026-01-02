@@ -11,6 +11,11 @@ export async function PATCH(request: Request) {
     }
 
     const { name, image } = await request.json();
+    console.log("Profile Update Request:", {
+      userId: session.user.id,
+      name,
+      image,
+    });
 
     await connectToDatabase();
 
@@ -18,9 +23,13 @@ export async function PATCH(request: Request) {
     if (name) updateData.name = name;
     if (image) updateData.image = image;
 
+    console.log("Updating User with:", updateData);
+
     const user = await User.findByIdAndUpdate(session.user.id, updateData, {
       new: true,
     }).select("-password");
+
+    console.log("Updated User Result:", user);
 
     return NextResponse.json(user);
   } catch (error) {

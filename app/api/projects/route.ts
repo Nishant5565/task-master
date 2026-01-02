@@ -17,7 +17,10 @@ export async function GET() {
         { ownerId: session.user.id },
         { "members.userId": session.user.id },
       ],
-    }).sort({ updatedAt: -1 });
+    })
+      .sort({ updatedAt: -1 })
+      .populate("ownerId", "name image")
+      .populate("members.userId", "name image");
 
     return NextResponse.json(projects);
   } catch (error) {

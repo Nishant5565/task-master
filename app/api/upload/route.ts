@@ -43,9 +43,24 @@ export async function POST(request: Request) {
     const bucketName = process.env.R2_BUCKET_NAME;
     const publicEndpoint = process.env.R2_PUBLIC_ENDPOINT;
 
-    if (!bucketName || !publicEndpoint) {
+    if (
+      !bucketName ||
+      !publicEndpoint ||
+      !process.env.R2_ENDPOINT ||
+      !process.env.R2_ACCESS_KEY_ID ||
+      !process.env.R2_SECRET_ACCESS_KEY
+    ) {
+      console.error("Missing R2 Config:", {
+        bucket: !!bucketName,
+        endpoint: !!process.env.R2_ENDPOINT,
+        accessKey: !!process.env.R2_ACCESS_KEY_ID,
+        secret: !!process.env.R2_SECRET_ACCESS_KEY,
+        publicEndpoint: !!publicEndpoint,
+      });
       return NextResponse.json(
-        { error: "Server configuration error" },
+        {
+          error: "Server configuration error: Missing R2 environment variables",
+        },
         { status: 500 }
       );
     }
@@ -55,16 +70,23 @@ export async function POST(request: Request) {
       Key: uniqueFilename,
       Body: buffer,
       ContentType: file.type,
-      ACL: "public-read" as any, // R2 might ignore ACL but good to have
+      // ACL: "public-read", // Removed as R2 often doesn't need/support this field in standard implementation
     };
 
     await s3.send(new PutObjectCommand(params));
 
-    const fileUrl = `${publicEndpoint}${uniqueFilename}`;
+    // Ensure publicEndpoint ends with a slash if not present
+    const cleanEndpoint = publicEndpoint.endsWith("/")
+      ? publicEndpoint
+      : `${publicEndpoint}/`;
+    const fileUrl = `${cleanEndpoint}${uniqueFilename}`;
 
     return NextResponse.json({ fileUrl });
-  } catch (error) {
-    console.error("Upload error:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  } catch (error: any) {
+    console.error("Upload error detailed:", error);
+    return NextResponse.json(
+      { error: `Upload failed: ${error.message}` },
+      { status: 500 }
+    );
   }
 }

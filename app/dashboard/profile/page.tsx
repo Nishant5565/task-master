@@ -18,6 +18,8 @@ export default function ProfilePage() {
 
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -30,7 +32,7 @@ export default function ProfilePage() {
     }
   }, [session]);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -39,28 +41,32 @@ export default function ProfilePage() {
       return;
     }
 
-    try {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await apiClient.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setImage(res.data.fileUrl);
-    } catch (error) {
-      console.error("Upload failed", error);
-      alert("Failed to upload image");
-    } finally {
-      setUploading(false);
-    }
+    // Set local preview state, do NOT upload yet
+    setSelectedFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
   };
 
   const handleSave = async () => {
     try {
       setLoading(true);
-      await apiClient.patch("/user/profile", { name, image });
+      let imageUrl = image;
+
+      // Check if we have a file waiting to be uploaded
+      if (selectedFile) {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        const uploadRes = await apiClient.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        imageUrl = uploadRes.data.fileUrl;
+        setUploading(false);
+      }
+
+      await apiClient.patch("/user/profile", { name, image: imageUrl });
 
       // Update session locally to reflect changes immediately
       await update({
@@ -68,18 +74,20 @@ export default function ProfilePage() {
         user: {
           ...session?.user,
           name,
-          image,
+          image: imageUrl,
         },
       });
 
       setIsEditing(false);
-      router.refresh();
+      setSelectedFile(null); // Clear pending file
+      router.refresh(); // This triggers our new DB fetch in auth.ts
       alert("Profile updated successfully!");
     } catch (error) {
       console.error("Update failed", error);
       alert("Failed to update profile");
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -100,7 +108,7 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center gap-4">
             <div className="relative group">
               <Avatar className="w-24 h-24 border sm:w-32 sm:h-32">
-                <AvatarImage src={image} />
+                <AvatarImage src={previewUrl || image} />
                 <AvatarFallback className="text-2xl bg-muted">
                   {name?.slice(0, 2).toUpperCase() || "U"}
                 </AvatarFallback>
@@ -184,6 +192,8 @@ export default function ProfilePage() {
                     // Reset fields
                     setName(session.user?.name || "");
                     setImage(session.user?.image || "");
+                    setPreviewUrl("");
+                    setSelectedFile(null);
                   }}
                   disabled={loading}
                 >

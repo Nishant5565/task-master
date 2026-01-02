@@ -30,10 +30,6 @@ import {
   Info,
   Rocket,
   Gavel,
-  Forum,
-  PostAdd,
-  Architecture,
-  PublishedWithChanges,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import BulkImportDialog from "./BulkImportDialog";
@@ -79,9 +75,15 @@ export default function ProjectDashboard({
   // Edit Dialog State
   const [editGroup, setEditGroup] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editIcon, setEditIcon] = useState("");
-  const [editColor, setEditColor] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  // Form State (Shared for Create/Edit)
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    icon: "LayoutGrid",
+    color: "indigo",
+  });
   const [updating, setUpdating] = useState(false);
 
   const router = useRouter();
@@ -107,9 +109,18 @@ export default function ProjectDashboard({
     if (projectId) fetchData();
   }, [projectId]);
 
+  const openCreateDialog = () => {
+    setFormData({
+      name: "",
+      description: "",
+      icon: "LayoutGrid",
+      color: "indigo",
+    });
+    setIsCreateDialogOpen(true);
+  };
+
   const handleCreateGroup = async () => {
-    const groupName = prompt("Enter group name:");
-    if (!groupName) return;
+    if (!formData.name) return;
 
     // Default fields for new groups (matching index.tsx pattern)
     const defaultFields = [
@@ -136,16 +147,21 @@ export default function ProjectDashboard({
     ];
 
     try {
+      setUpdating(true);
       const res = await apiClient.post(`/projects/${projectId}/groups`, {
-        name: groupName,
+        name: formData.name,
+        description: formData.description,
+        icon: formData.icon,
+        color: formData.color,
         fields: defaultFields,
       });
       setGroups([...groups, res.data]);
-      // Navigate to the new group
-      // onOpenGroup(res.data._id); // Don't auto open, let user configure
+      setIsCreateDialogOpen(false);
     } catch (e) {
       console.error("Failed to create group", e);
       alert("Failed to create group");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -167,9 +183,12 @@ export default function ProjectDashboard({
 
   const openEditDialog = (group: any) => {
     setEditGroup(group);
-    setEditName(group.name);
-    setEditIcon(group.icon || "LayoutGrid");
-    setEditColor(group.color || "indigo");
+    setFormData({
+      name: group.name,
+      description: group.description || "",
+      icon: group.icon || "LayoutGrid",
+      color: group.color || "indigo",
+    });
     setIsEditDialogOpen(true);
   };
 
@@ -178,9 +197,10 @@ export default function ProjectDashboard({
     try {
       setUpdating(true);
       const res = await apiClient.put(`/groups/${editGroup._id}`, {
-        name: editName,
-        icon: editIcon,
-        color: editColor,
+        name: formData.name,
+        description: formData.description,
+        icon: formData.icon,
+        color: formData.color,
       });
 
       setGroups((prev) =>
@@ -236,26 +256,16 @@ export default function ProjectDashboard({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8 font-sans text-slate-900">
+    <div className="min-h-screen p-8 text-slate-900">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-medium text-slate-500">
-                Workspace
-              </span>
-              <span className="text-slate-400">/</span>
-              <span className="text-sm font-medium text-indigo-600">
-                {project.name}
-              </span>
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              Task Groups
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              {project.name}
             </h1>
-            <p className="mt-2 text-slate-500 max-w-2xl">
-              Manage your project phases, track progress, and organize team
-              resources effectively.
+            <p className="mt-2 text-slate-500 max-w-2xl text-sm">
+              {project.description}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -266,7 +276,7 @@ export default function ProjectDashboard({
                   key={m.userId}
                   className="inline-block h-8 w-8 ring-2 ring-white cursor-pointer"
                 >
-                  <AvatarImage />
+                  <AvatarImage src={m.image} />
                   <AvatarFallback className="bg-orange-100 text-orange-700 text-xs">
                     {getInitials(m.name, m.email)}
                   </AvatarFallback>
@@ -285,8 +295,8 @@ export default function ProjectDashboard({
 
             <BulkImportDialog projectId={projectId} onSuccess={fetchData} />
             <button
-              onClick={handleCreateGroup}
-              className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-lg shadow-md shadow-indigo-200 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-600 transition-all"
+              onClick={openCreateDialog}
+              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-lg shadow-md shadow-indigo-200 font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-600 transition-all text-sm"
             >
               <Plus size={20} className="mr-2" />
               Create Group
@@ -353,10 +363,12 @@ export default function ProjectDashboard({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                  <h3
+                    className={`text-[16px] font-semibold  mb-2  transition-colors ${colorDef.text} `}
+                  >
                     {group.name}
                   </h3>
-                  <p className="text-sm text-slate-500 leading-relaxed mb-6 line-clamp-2">
+                  <p className="text-[12px] text-slate-500 leading-relaxed mb-6 line-clamp-2">
                     {group.description || "Manage tasks and track progress."}
                   </p>
 
@@ -382,10 +394,23 @@ export default function ProjectDashboard({
                 </div>
                 <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl">
                   <div className="flex -space-x-2 overflow-hidden">
-                    {/* Show first few members avatars (optional, using project members for now as placeholder or per-group if implemented) */}
-                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-200 flex items-center justify-center text-xs text-slate-500">
-                      ?
-                    </div>
+                    {/* Show first few members avatars (using project members as requested) */}
+                    {members.slice(0, 3).map((m: any) => (
+                      <Avatar
+                        key={m.userId}
+                        className="inline-block h-8 w-8 ring-2 ring-white cursor-pointer"
+                      >
+                        <AvatarImage src={m.image} />
+                        <AvatarFallback className="bg-slate-200 text-slate-500 text-xs">
+                          {getInitials(m.name, m.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                    {members.length > 3 && (
+                      <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-500">
+                        +{members.length - 3}
+                      </div>
+                    )}
                   </div>
                   <button
                     className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center group/link transition-colors"
@@ -408,7 +433,7 @@ export default function ProjectDashboard({
           {/* Empty State */}
           {groups.length === 0 && (
             <div
-              onClick={handleCreateGroup}
+              onClick={openCreateDialog}
               className="col-span-full py-16 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all cursor-pointer"
             >
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
@@ -423,6 +448,67 @@ export default function ProjectDashboard({
         </div>
       </div>
 
+      {/* Create Group Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Group</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="create-name">Name</Label>
+              <Input
+                id="create-name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder="e.g. Phase 1: Planning"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="create-desc">Description (Optional)</Label>
+              <Input
+                id="create-desc"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                placeholder="Briefly describe this group"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Icon</Label>
+              <IconPicker
+                value={formData.icon}
+                onChange={(icon) => setFormData({ ...formData, icon })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Color Theme</Label>
+              <ColorPicker
+                value={formData.color}
+                onChange={(color) => setFormData({ ...formData, color })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateGroup}
+              disabled={updating || !formData.name}
+            >
+              {updating ? "Creating..." : "Create Group"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Group Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -431,20 +517,38 @@ export default function ProjectDashboard({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="edit-name">Name</Label>
               <Input
-                id="name"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-desc">Description</Label>
+              <Input
+                id="edit-desc"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
               />
             </div>
             <div className="grid gap-2">
               <Label>Icon</Label>
-              <IconPicker value={editIcon} onChange={setEditIcon} />
+              <IconPicker
+                value={formData.icon}
+                onChange={(icon) => setFormData({ ...formData, icon })}
+              />
             </div>
             <div className="grid gap-2">
               <Label>Color Theme</Label>
-              <ColorPicker value={editColor} onChange={setEditColor} />
+              <ColorPicker
+                value={formData.color}
+                onChange={(color) => setFormData({ ...formData, color })}
+              />
             </div>
           </div>
           <DialogFooter>

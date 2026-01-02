@@ -15,7 +15,9 @@ export async function GET(
     const { id } = await params;
     await connectToDatabase();
 
-    const groups = await TaskGroup.find({ projectId: id }).sort({ order: 1 });
+    const groups = await TaskGroup.find({ projectId: id })
+      .select({ fields: 0 })
+      .sort({ order: 1 });
     return NextResponse.json(groups);
   } catch (error) {
     return NextResponse.json(
@@ -35,7 +37,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
-    const { name } = await request.json();
+    const { name, description, icon, color, fields } = await request.json();
 
     await connectToDatabase();
 
@@ -47,8 +49,13 @@ export async function POST(
 
     const newGroup = await TaskGroup.create({
       name,
+      description,
+      icon,
+      color,
       projectId: id,
       order,
+      userId: session.user.id,
+      fields: fields || [],
     });
 
     return NextResponse.json(newGroup);

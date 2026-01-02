@@ -19,7 +19,7 @@ const FieldDefinitionSchema = new mongoose.Schema(
 
 const MemberSchema = new mongoose.Schema(
   {
-    userId: { type: String, required: true }, // Auth ID
+    userId: { type: String, required: true, ref: "User" }, // Auth ID
     role: {
       type: String,
       enum: ["owner", "admin", "editor", "viewer"],
@@ -32,7 +32,7 @@ const MemberSchema = new mongoose.Schema(
 const ProjectSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    ownerId: { type: String, required: true, index: true },
+    ownerId: { type: String, required: true, index: true, ref: "User" },
     description: { type: String },
     members: { type: [MemberSchema], default: [] },
     fields: { type: [FieldDefinitionSchema], default: [] }, // The "Schema" is now per project

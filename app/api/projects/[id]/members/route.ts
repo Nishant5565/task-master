@@ -34,7 +34,7 @@ export async function GET(
       .filter((id: string) => mongoose.Types.ObjectId.isValid(id));
 
     const users = await User.find({ _id: { $in: memberIds } }).select(
-      "name email _id"
+      "name email _id image"
     );
 
     const members = project.members.map((m: any) => {
@@ -44,11 +44,14 @@ export async function GET(
         role: m.role,
         name: user?.name,
         email: user?.email,
+        image: user?.image,
       };
     });
 
     // Also include Owner
-    const owner = await User.findById(project.ownerId).select("name email _id");
+    const owner = await User.findById(project.ownerId).select(
+      "name email _id image"
+    );
 
     // Filter out owner from members list if present to avoid duplication
     const filteredMembers = members.filter(
@@ -61,6 +64,7 @@ export async function GET(
         role: "owner",
         name: owner?.name,
         email: owner?.email,
+        image: owner?.image,
       },
       ...filteredMembers,
     ];

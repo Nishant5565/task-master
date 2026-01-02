@@ -32,6 +32,7 @@ const FieldDefinitionSchema = new mongoose.Schema(
 const TaskGroupSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    description: { type: String },
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
