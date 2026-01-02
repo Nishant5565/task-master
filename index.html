@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Task Group Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4F46E5", // Indigo 600
+              "primary-hover": "#4338CA", // Indigo 700
+              "primary-light": "#EEF2FF", // Indigo 50
+              secondary: "#64748B", // Slate 500
+              background: "#F8FAFC", // Slate 50
+              surface: "#FFFFFF",
+              border: "#E2E8F0", // Slate 200
+            },
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            boxShadow: {
+              soft: "0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)",
+              "soft-hover":
+                "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-background font-sans text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-700"
+  >
+    <nav
+      class="sticky top-0 z-40 w-full bg-surface border-b border-border shadow-sm"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 justify-between items-center">
+          <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2">
+              <div
+                class="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md"
+              >
+                <span class="material-symbols-outlined text-xl"
+                  >diversity_2</span
+                >
+              </div>
+              <span class="text-lg font-bold tracking-tight text-slate-900"
+                >TaskFlow</span
+              >
+            </div>
+            <div class="hidden md:flex items-center space-x-1">
+              <a
+                class="px-3 py-2 rounded-md text-sm font-medium text-primary bg-primary-light"
+                href="#"
+                >Dashboard</a
+              >
+              <a
+                class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                href="#"
+                >Projects</a
+              >
+              <a
+                class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                href="#"
+                >Team</a
+              >
+              <a
+                class="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                href="#"
+                >Reports</a
+              >
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="relative hidden sm:block">
+              <span
+                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+              >
+                <span class="material-symbols-outlined text-slate-400 text-lg"
+                  >search</span
+                >
+              </span>
+              <input
+                class="block w-full pl-10 pr-3 py-1.5 border border-border rounded-lg leading-5 bg-slate-50 text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition-colors"
+                placeholder="Search tasks..."
+                type="text"
+              />
+            </div>
+            <button
+              class="relative p-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-primary transition-colors"
+            >
+              <span class="material-symbols-outlined text-xl"
+                >notifications</span
+              >
+              <span
+                class="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
+              ></span>
+            </button>
+            <div
+              class="h-8 w-8 rounded-full bg-slate-200 border border-slate-300 overflow-hidden cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary transition-all"
+            >
+              <img
+                alt="User"
+                class="h-full w-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP18bd4-k07FuyBQMfYKo-X7CA1U5eN_ldder3_PT9AKiw8qV8bMmHxOyADzT_4yEFg8saztRqzguS19SVPaUEhP-KciqeoTg_ro1AVxrrZt02qEuIzxgN8YWmShLjJcIPK5RpLpgqPPiFNoSf-pKZFbPq2eSxcKyr_HndBzitu9ZJO10EWIThlCx501krVy5K7xNsdOZbXwcubyjwSv3pmrxFpLClKpiM4SaleJJCqykYoZ2LynWDbobZX1LosNi-PFgjIEvaqJwF"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div
+        class="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-12"
+      >
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-sm font-medium text-slate-500">Workspace</span>
+            <span class="text-slate-400">/</span>
+            <span class="text-sm font-medium text-indigo-600">Reddit HQ</span>
+          </div>
+          <h1 class="text-3xl font-bold text-slate-900 tracking-tight">
+            Task Groups
+          </h1>
+          <p class="mt-2 text-slate-500 max-w-2xl">
+            Manage your project phases, track progress, and organize team
+            resources effectively from a central hub.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 self-start md:self-end">
+          <button
+            class="group inline-flex items-center px-4 py-2.5 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-all"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] mr-2 text-slate-400 group-hover:text-indigo-500 transition-colors"
+              >upload_file</span
+            >
+            Bulk Import
+          </button>
+          <button
+            class="inline-flex items-center px-4 py-2.5 border border-transparent rounded-lg shadow-md shadow-indigo-200 text-sm font-medium text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary transition-all"
+          >
+            <span class="material-symbols-outlined text-[20px] mr-2"
+              >add_circle</span
+            >
+            Create Group
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div
+          class="group bg-surface rounded-2xl border border-border shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+        >
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
+          <div class="p-6 flex-1">
+            <div class="flex justify-between items-start mb-5">
+              <div
+                class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center ring-1 ring-blue-100"
+              >
+                <span class="material-symbols-outlined text-2xl"
+                  >architecture</span
+                >
+              </div>
+              <button
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+            </div>
+            <h3
+              class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-primary transition-colors"
+            >
+              Week 1: Foundations
+            </h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6">
+              Establishing the bedrock of our application structure and core
+              architecture setup.
+            </p>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-2">
+              <div
+                class="bg-slate-300 h-2 rounded-full"
+                style="width: 0%"
+              ></div>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-medium text-slate-500">Not Started</span>
+              <span class="text-slate-400">0/14 tasks</span>
+            </div>
+          </div>
+          <div
+            class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl"
+          >
+            <div class="flex -space-x-2 overflow-hidden">
+              <div
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-200 flex items-center justify-center text-xs text-slate-500"
+              >
+                ?
+              </div>
+            </div>
+            <a
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center group/link transition-colors"
+              href="#"
+            >
+              View Details
+              <span
+                class="material-symbols-outlined text-sm ml-1 transform group-hover/link:translate-x-1 transition-transform"
+                >arrow_forward</span
+              >
+            </a>
+          </div>
+        </div>
+        <div
+          class="group bg-surface rounded-2xl border border-border shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+        >
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
+          <div class="p-6 flex-1">
+            <div class="flex justify-between items-start mb-5">
+              <div
+                class="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center ring-1 ring-indigo-100"
+              >
+                <span class="material-symbols-outlined text-2xl">post_add</span>
+              </div>
+              <button
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+            </div>
+            <h3
+              class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-primary transition-colors"
+            >
+              Week 2: The Posting Engine
+            </h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6">
+              Building the core content creation flow, including rich text
+              editors and media upload.
+            </p>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-2">
+              <div
+                class="bg-indigo-500 h-2 rounded-full"
+                style="width: 45%"
+              ></div>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-medium text-indigo-600">In Progress</span>
+              <span class="text-slate-400">12/26 tasks</span>
+            </div>
+          </div>
+          <div
+            class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl"
+          >
+            <div class="flex -space-x-2 overflow-hidden">
+              <img
+                alt=""
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWDAa-ZQoRlWB5sI4Pu-NsY0yuLuN_D9lB21Fu3nFTPRIQt9moYJ-Wutkun8b2v5cB5JvNSzlUH8Oc9uBMXNamuvFyHKclEwJuNivnVGBAFx2GBOxzmxE2v6exnsqw-7uRnvyMx_akoILjbXBUJkEwQDHIAjfJ8iFK4T5zy7t5GjUyaSgy5TsJUUYPjVHLpqCo5Uk9K7gM2ECUQAxac8GsDjlMv5t81ELaRNIWmZoBlFzA_l0objMpqjZSDLa5oOWE9WkAx4fkDAwb"
+              />
+              <img
+                alt=""
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG6vqfXGUdy3JZFVJHdjaqGP2PHuQQQjT1y854R2xUdNy8vyYUVAX0W7YH3aByFxp452lz0pPmmq60TSaCC4hg-jZhp33OkhyfaM-JNCgGMyoQHX5ZVOQ5G7gx_t68YP_ng9A43kjgxoAbksNiS04ZtbzhLHL5D_owD-wyTIkaQWIoMto90EzH3WFPJVkBEGgofMckmKCJBjsxFvH1U_p5xOYB_RlUeH1jw_kK7yMo6WSHaeiznS7J7UKvzjRIE2wFczmVYE44u5mW"
+              />
+              <div
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-500"
+              >
+                +2
+              </div>
+            </div>
+            <a
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center group/link transition-colors"
+              href="#"
+            >
+              View Details
+              <span
+                class="material-symbols-outlined text-sm ml-1 transform group-hover/link:translate-x-1 transition-transform"
+                >arrow_forward</span
+              >
+            </a>
+          </div>
+        </div>
+        <div
+          class="group bg-surface rounded-2xl border border-border shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+        >
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
+          <div class="p-6 flex-1">
+            <div class="flex justify-between items-start mb-5">
+              <div
+                class="h-12 w-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center ring-1 ring-purple-100"
+              >
+                <span class="material-symbols-outlined text-2xl">forum</span>
+              </div>
+              <button
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+            </div>
+            <h3
+              class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-primary transition-colors"
+            >
+              Week 3: Interaction
+            </h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6">
+              Enabling user engagement, comment threading, and upvote/downvote
+              mechanics.
+            </p>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-2">
+              <div
+                class="bg-purple-500 h-2 rounded-full"
+                style="width: 20%"
+              ></div>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-medium text-purple-600">Started</span>
+              <span class="text-slate-400">8/40 tasks</span>
+            </div>
+          </div>
+          <div
+            class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl"
+          >
+            <div class="flex -space-x-2 overflow-hidden">
+              <img
+                alt=""
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiF4PuQmJpZX_luAd3S-W8n4BPcKb0xqzFMRarAOq5U8OuSfj8b1G0Rv3fKSAd-FQxfTuqqXY96qmrLBjQ4SPqkoGaHs1HVy7jF4bmPoYzFTlLJ9K7g68fS0fr1O22Fa1fOzCVxs2ezJriSCcgPla6Kh3xXu9fwJYEFPcc9txm150oE39637VH6dJzxehqfaotBHVlWUw9lEfouZ5yRQ69Uk2aafWeXoV1E8yZLDVObHvu5tJU6_ky66gEQ0FaXpn78crWRQJV0Db8"
+              />
+            </div>
+            <a
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center group/link transition-colors"
+              href="#"
+            >
+              View Details
+              <span
+                class="material-symbols-outlined text-sm ml-1 transform group-hover/link:translate-x-1 transition-transform"
+                >arrow_forward</span
+              >
+            </a>
+          </div>
+        </div>
+        <div
+          class="group bg-surface rounded-2xl border border-border shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+        >
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
+          <div class="p-6 flex-1">
+            <div class="flex justify-between items-start mb-5">
+              <div
+                class="h-12 w-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center ring-1 ring-orange-100"
+              >
+                <span class="material-symbols-outlined text-2xl"
+                  >rocket_launch</span
+                >
+              </div>
+              <button
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+            </div>
+            <h3
+              class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-primary transition-colors"
+            >
+              Week 4: Feeds &amp; Ranking
+            </h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6">
+              Optimizing content delivery, Redis caching strategies, and
+              relevance algorithms.
+            </p>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-2">
+              <div
+                class="bg-slate-300 h-2 rounded-full"
+                style="width: 0%"
+              ></div>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-medium text-slate-500">Not Started</span>
+              <span class="text-slate-400">0/18 tasks</span>
+            </div>
+          </div>
+          <div
+            class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl"
+          >
+            <div class="flex -space-x-2 overflow-hidden">
+              <div
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-200 flex items-center justify-center text-xs text-slate-500"
+              >
+                ?
+              </div>
+            </div>
+            <a
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center group/link transition-colors"
+              href="#"
+            >
+              View Details
+              <span
+                class="material-symbols-outlined text-sm ml-1 transform group-hover/link:translate-x-1 transition-transform"
+                >arrow_forward</span
+              >
+            </a>
+          </div>
+        </div>
+        <div
+          class="group bg-surface rounded-2xl border border-border shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+        >
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
+          <div class="p-6 flex-1">
+            <div class="flex justify-between items-start mb-5">
+              <div
+                class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center ring-1 ring-emerald-100"
+              >
+                <span class="material-symbols-outlined text-2xl">gavel</span>
+              </div>
+              <button
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+            </div>
+            <h3
+              class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-primary transition-colors"
+            >
+              Week 5: Moderation
+            </h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6">
+              Tools for maintaining healthy community standards, auto-moderation
+              bots.
+            </p>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-2">
+              <div
+                class="bg-emerald-500 h-2 rounded-full"
+                style="width: 10%"
+              ></div>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-medium text-emerald-600">Researching</span>
+              <span class="text-slate-400">3/30 tasks</span>
+            </div>
+          </div>
+          <div
+            class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl"
+          >
+            <div class="flex -space-x-2 overflow-hidden">
+              <img
+                alt=""
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwebMPHU18CytFXPdSc1OGIv-nYkgrTaOpVl-0htpbTxUjTn_KVoF5JGn0hMcf_dGCtvVLZnvQmDWMVr15JFtuUaUPDpABbD6eyZClYH2sBCQo_qMIlIWFOEkYkesnab19rLdIVa9je3zo21BCWh_h-NF8Sh3Fb_qlrD41F4NrtZUq9g1PcNEvebUeZD8q7oDSLP3fFlT8lXUgMCXl27h2RUkdqmIS52V9vLXLDK21-UQQ3feANl2nFsvADszLHpZnqU5DPbKkp-n0"
+              />
+            </div>
+            <a
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center group/link transition-colors"
+              href="#"
+            >
+              View Details
+              <span
+                class="material-symbols-outlined text-sm ml-1 transform group-hover/link:translate-x-1 transition-transform"
+                >arrow_forward</span
+              >
+            </a>
+          </div>
+        </div>
+        <div
+          class="group bg-surface rounded-2xl border border-border shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col h-full relative overflow-hidden"
+        >
+          <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-600 to-black opacity-0 group-hover:opacity-100 transition-opacity"
+          ></div>
+          <div class="p-6 flex-1">
+            <div class="flex justify-between items-start mb-5">
+              <div
+                class="h-12 w-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center ring-1 ring-slate-200"
+              >
+                <span class="material-symbols-outlined text-2xl"
+                  >published_with_changes</span
+                >
+              </div>
+              <button
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+              >
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+            </div>
+            <h3
+              class="text-lg font-semibold text-slate-900 mb-2 group-hover:text-primary transition-colors"
+            >
+              Week 6: Polish &amp; Deploy
+            </h3>
+            <p class="text-sm text-slate-500 leading-relaxed mb-6">
+              Final adjustments, SEO optimization, and launching to production
+              environment.
+            </p>
+            <div class="w-full bg-slate-100 rounded-full h-2 mb-2">
+              <div
+                class="bg-slate-300 h-2 rounded-full"
+                style="width: 0%"
+              ></div>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-medium text-slate-500">Scheduled</span>
+              <span class="text-slate-400">0/15 tasks</span>
+            </div>
+          </div>
+          <div
+            class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between rounded-b-2xl"
+          >
+            <div class="flex -space-x-2 overflow-hidden">
+              <div
+                class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-200 flex items-center justify-center text-xs text-slate-500"
+              >
+                ?
+              </div>
+            </div>
+            <a
+              class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center group/link transition-colors"
+              href="#"
+            >
+              View Details
+              <span
+                class="material-symbols-outlined text-sm ml-1 transform group-hover/link:translate-x-1 transition-transform"
+                >arrow_forward</span
+              >
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

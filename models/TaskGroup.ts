@@ -39,9 +39,25 @@ const TaskGroupSchema = new mongoose.Schema(
       index: true,
     },
     order: { type: Number, required: true, default: 0 },
+    icon: { type: String, default: "LayoutGrid" },
+    color: { type: String, default: "indigo" }, // blue, indigo, purple, pink, orange, green, slate
     userId: { type: String, required: true, index: true }, // Creator
     // Fields specific to this group
     fields: { type: [FieldDefinitionSchema], default: [] },
+    members: {
+      type: [
+        {
+          userId: { type: String, required: true },
+          role: {
+            type: String,
+            enum: ["editor", "viewer"], // No owner/admin for groups? Maybe just simple roles
+            default: "viewer",
+          },
+        },
+      ],
+      default: [],
+      _id: false,
+    },
   },
   { timestamps: true }
 );

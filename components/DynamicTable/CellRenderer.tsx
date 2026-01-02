@@ -41,13 +41,14 @@ export default function CellRenderer({
   const getStyleObj = () => ({
     fontWeight: style.bold ? "bold" : "normal",
     fontSize: style.fontSize ? `${style.fontSize}px` : undefined,
-    color: style.textColor, // This might conflict with Tailwind classes if not careful, but inline wins
-    backgroundColor: style.bgColor,
+    // Colors are applied via className in parent or here if passed as class
     textAlign: style.align || "left",
     whiteSpace: style.wrap === false ? "nowrap" : "pre-wrap",
   });
 
-  const commonClasses = `w-full bg-transparent outline-none border-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset text-sm text-gray-700 px-3 py-2`;
+  const commonClasses = `w-full bg-transparent outline-none border-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset text-sm ${
+    style.textColor || "text-gray-700"
+  } px-3 py-2`;
 
   // --- Text Field ---
   if (field.type === "text" || field.type === "description") {
@@ -140,7 +141,7 @@ export default function CellRenderer({
               ${
                 isValid && textVal
                   ? "text-blue-600 underline decoration-blue-200"
-                  : "text-gray-700"
+                  : style.textColor || "text-gray-700"
               }
             `}
           style={getStyleObj() as any}
@@ -188,45 +189,46 @@ export default function CellRenderer({
     return (
       <div
         className="relative w-full h-full min-h-10 group"
-        style={{ backgroundColor: style.bgColor }}
+        // onClick/onPointerDown removed to allow Select to function normally.
+        // If row selection interference returns, we will handle it in handleCellClick.
       >
-        <select
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-        >
-          <option value="">Select...</option>
-          {(field.options as SelectOption[])?.map((opt) => (
-            <option key={opt.id} value={opt.id}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <div
-          className="w-full h-full flex items-start px-3 py-2 pointer-events-none"
-          style={{
-            justifyContent:
-              style.align === "center"
-                ? "center"
-                : style.align === "right"
-                ? "flex-end"
-                : "flex-start",
-          }}
-        >
-          {selectedOption ? (
-            <span
-              className={`px-2 py-0.5 rounded text-xs font-medium ${selectedOption.color}`}
-              style={{
-                fontWeight: style.bold ? "bold" : "normal",
-                fontSize: style.fontSize ? `${style.fontSize}px` : undefined,
-              }}
-            >
-              {selectedOption.label}
-            </span>
-          ) : (
-            <span className="text-gray-400 text-sm">Select...</span>
-          )}
-        </div>
+        <Select value={value || ""} onValueChange={(val) => onChange(val)}>
+          <SelectTrigger className="w-full h-full min-h-10 border-none shadow-none bg-transparent hover:bg-black/5 focus:ring-0 px-2 py-0 text-xs data-[placeholder]:text-gray-400">
+            {selectedOption ? (
+              <span
+                className={`px-2 py-0.5 rounded text-xs font-medium ${selectedOption.color}`}
+                style={{
+                  fontWeight: style.bold ? "bold" : "normal",
+                  fontSize: style.fontSize ? `${style.fontSize}px` : undefined,
+                }}
+              >
+                {selectedOption.label}
+              </span>
+            ) : (
+              <span className="text-gray-400">Select...</span>
+            )}
+          </SelectTrigger>
+          <SelectContent
+            className="z-[9999] bg-white border border-gray-200 shadow-xl max-h-[300px]"
+            position="popper"
+            sideOffset={5}
+            align="start"
+          >
+            {(field.options as SelectOption[])?.map((opt) => (
+              <SelectItem
+                key={opt.id}
+                value={opt.id}
+                className="text-xs focus:bg-gray-100 cursor-pointer my-1"
+              >
+                <span
+                  className={`px-2 py-0.5 rounded font-medium ${opt.color}`}
+                >
+                  {opt.label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     );
   }
@@ -237,7 +239,9 @@ export default function CellRenderer({
       <div className="w-full">
         <input
           type="date"
-          className="w-full bg-transparent outline-none border-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset text-sm text-gray-700 font-mono px-3 py-2"
+          className={`w-full bg-transparent outline-none border-none focus:ring-2 focus:ring-indigo-500 focus:ring-inset text-sm font-mono px-3 py-2 ${
+            style.textColor || "text-gray-700"
+          }`}
           style={getStyleObj() as any}
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}

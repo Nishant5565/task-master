@@ -46,26 +46,40 @@ export default function FormattingToolbar({
       </div>
 
       {/* Font Size */}
-      <div
-        className={`flex items-center border border-gray-200 rounded-md overflow-hidden bg-white ${
-          disabled ? "opacity-50" : "hover:border-gray-300"
-        }`}
-      >
-        <select
-          className="h-8 text-xs bg-transparent outline-none px-2 cursor-pointer w-16 disabled:cursor-not-allowed"
-          value={currentStyles.fontSize || 14}
-          onChange={(e) =>
-            onUpdateStyle({ fontSize: parseInt(e.target.value) })
-          }
-          disabled={disabled}
-        >
-          {[12, 13, 14, 15, 16, 18, 20, 24].map((size) => (
-            <option key={size} value={size}>
-              {size}px
-            </option>
-          ))}
-        </select>
-      </div>
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            className={`flex items-center justify-between border border-gray-200 rounded-md bg-white px-2 py-1 h-8 min-w-[64px] ${
+              disabled
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:border-gray-300"
+            }`}
+            disabled={disabled}
+          >
+            <span className="text-xs text-gray-700">
+              {currentStyles.fontSize || 14}px
+            </span>
+            <ChevronDown size={12} className="text-gray-400 ml-1" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-20 p-1 z-50 max-h-60 overflow-y-auto">
+          <div className="flex flex-col gap-0.5">
+            {[12, 13, 14, 15, 16, 18, 20, 24].map((size) => (
+              <button
+                key={size}
+                className={`text-xs px-2 py-1.5 text-left rounded-sm hover:bg-gray-100 ${
+                  (currentStyles.fontSize || 14) === size
+                    ? "bg-indigo-50 text-indigo-700 font-medium"
+                    : "text-gray-700"
+                }`}
+                onClick={() => onUpdateStyle({ fontSize: size })}
+              >
+                {size}px
+              </button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Divider */}
       <div className="w-px h-6 bg-gray-200 mx-1"></div>

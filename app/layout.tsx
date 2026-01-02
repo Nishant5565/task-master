@@ -33,9 +33,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <div className="min-h-screen flex flex-col">
-              <main className="flex-1 overflow-hidden h-screen">
-                {children}
-              </main>
+              <main className="flex-1 min-h-screen">{children}</main>
             </div>
           </ThemeProvider>
         </AuthProvider>

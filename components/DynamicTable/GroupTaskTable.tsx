@@ -27,7 +27,10 @@ import {
 import { COLOR_PALETTE, TaskItem, CellStyle } from "@/lib/schema";
 import CellRenderer from "./CellRenderer";
 import FieldManager from "./FieldManager";
+import ColorSafelist from "./ColorSafelist";
+import { useHeaderControl } from "@/components/context/header-control-context";
 import FormattingToolbar from "./FormattingToolbar";
+import InviteMemberDialog from "@/components/InviteMemberDialog";
 
 interface GroupTaskTableProps {
   projectId: string;
@@ -382,6 +385,40 @@ export default function GroupTaskTable({
     return {};
   };
 
+  // --- Header Control & Hoisting ---
+  const { isPageHeaderVisible, setHeaderCenter, setHeaderRight } =
+    useHeaderControl();
+
+  useEffect(() => {
+    if (!group) return;
+
+    // Set Title
+    setHeaderCenter(
+      <h1 className="text-lg font-bold flex items-center gap-2">
+        {group.name}
+      </h1>
+    );
+
+    // Set Actions (FieldManager + Share)
+    setHeaderRight(
+      <div className="flex items-center gap-2">
+        <FieldManager
+          group={group}
+          onUpdate={(updatedGroup) => {
+            handleUpdateFields(updatedGroup.fields);
+          }}
+        />
+        <InviteMemberDialog projectId={projectId} />
+      </div>
+    );
+
+    // Cleanup
+    return () => {
+      setHeaderCenter(null);
+      setHeaderRight(null);
+    };
+  }, [group, setHeaderCenter, setHeaderRight, projectId]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -401,129 +438,103 @@ export default function GroupTaskTable({
   // --- Render ---
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm relative z-20">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onBack || (() => router.back())}
-            className="p-2 -ml-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <div className="text-xs text-gray-500 font-medium">
-              Workspace / {group.name}
-            </div>
-            <h1 className="text-lg font-bold flex items-center gap-2">
-              {group.name}
-            </h1>
-          </div>
-        </div>
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <ColorSafelist />
 
-        <FieldManager
-          group={group}
-          onUpdate={(updatedGroup) => {
-            handleUpdateFields(updatedGroup.fields);
-          }}
+      {/* Sticky Toolbar Wrapper */}
+      <div
+        className={`sticky top-16 z-40 bg-gray-50 shadow-sm transition-all duration-300 ease-in-out overflow-hidden ${
+          isPageHeaderVisible
+            ? "translate-y-0 opacity-100 max-h-[100px]"
+            : "-translate-y-full opacity-0 max-h-0"
+        }`}
+      >
+        {/* Formatting Toolbar */}
+        <FormattingToolbar
+          selection={
+            selection
+              ? { type: selection.type, count: selection.items.size }
+              : null
+          }
+          currentStyles={getCurrentSelectionStyles()}
+          onUpdateStyle={updateSelectionStyle}
         />
-      </header>
+      </div>
 
-      {/* Formatting Toolbar */}
-      <FormattingToolbar
-        selection={
-          selection
-            ? { type: selection.type, count: selection.items.size }
-            : null
-        }
-        currentStyles={getCurrentSelectionStyles()}
-        onUpdateStyle={updateSelectionStyle}
-      />
-
-      {/* Main Table */}
-      <div className="flex-1 overflow-auto p-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-w-fit">
-          <div className="overflow-x-auto">
+      {/* Main Table - Removed overflow-auto to allow body scroll */}
+      <div className="flex-1">
+        <div className="border bg-white min-w-fit">
+          <div className="">
             <table className="min-w-full divide-y divide-gray-200 table-fixed">
-              <thead className="bg-white">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="w-10 sticky left-0 bg-white z-10 border-b border-gray-200"></th>
+                  <th
+                    className="w-10 border-b border-gray-200 bg-gray-50 sticky left-0 z-30 transition-all duration-300 ease-in-out"
+                    style={{ top: isPageHeaderVisible ? "116px" : "64px" }}
+                  ></th>
                   {group.fields &&
                     group.fields.map((field: any) => (
                       <th
                         key={field.key}
-                        className={`px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-100 last:border-r-0 relative group/th select-none ${
-                          selection?.type === "col" &&
-                          selection.items.has(field.key)
-                            ? "bg-indigo-50 text-indigo-700"
-                            : ""
-                        }`}
+                        className={`px-3 py-2 text-left text-xs font-medium uppercase tracking-wider border-r border-gray-100 last:border-r-0 group/th select-none transition-all sticky z-30 duration-300 ease-in-out
+                          ${
+                            selection?.type === "col" &&
+                            selection.items.has(field.key)
+                              ? "bg-indigo-50 text-indigo-700"
+                              : `${field.bgColor || "text-gray-500"} ${
+                                  field.textColor || ""
+                                }`
+                          }`}
                         style={{
                           width: field.width || 150,
                           minWidth: field.width || 150,
+                          top: isPageHeaderVisible ? "116px" : "62px",
+                          // Apply background color to sticky header to prevent transparency issues
+                          backgroundColor:
+                            selection?.type === "col" &&
+                            selection.items.has(field.key)
+                              ? undefined
+                              : field.bgColor
+                              ? undefined
+                              : "#f9fafb", // bg-gray-50 hex
                         }}
                         onClick={() => handleColHeaderClick(field.key)}
                       >
-                        <div className="flex items-center gap-2 truncate flex-1">
-                          {getFieldIcon(field.type)}
-                          {field.label}
-                        </div>
+                        <div className="flex items-center px-2">
+                          <div className="flex items-center gap-2 truncate flex-1">
+                            {getFieldIcon(field.type)}
+                            {field.label}
+                          </div>
 
-                        {/* Column Settings Trigger */}
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button
-                              className="opacity-0 group-hover/th:opacity-100 p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 transition-all"
-                              onClick={(e) => e.stopPropagation()}
+                          {/* Column Settings Trigger */}
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <button
+                                className="opacity-0 group-hover/th:opacity-100 p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-gray-600 transition-all"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Settings2 size={12} />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-64 p-4 bg-white rounded-xl shadow-lg border border-gray-100 dark:bg-gray-800 dark:border-gray-700"
+                              align="start"
                             >
-                              <Settings2 size={12} />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            className="w-64 p-4 bg-white rounded-xl shadow-lg border border-gray-100 dark:bg-gray-800 dark:border-gray-700"
-                            align="start"
-                          >
-                            <div className="space-y-4">
-                              <h4 className="font-semibold text-xs text-gray-900 pb-2 border-b border-gray-100">
-                                Column Appearance
-                              </h4>
+                              <div className="space-y-4">
+                                <h4 className="font-semibold text-xs text-gray-900 pb-2 border-b border-gray-100">
+                                  Column Appearance
+                                </h4>
 
-                              {/* Background Color */}
-                              <div className="space-y-2">
-                                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                                  Background
-                                </label>
-                                <div className="grid grid-cols-7 gap-1">
-                                  {/* Reset/Default */}
-                                  <button
-                                    className={`w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 ${
-                                      !field.bgColor
-                                        ? "ring-2 ring-indigo-500 ring-offset-1"
-                                        : ""
-                                    }`}
-                                    onClick={() => {
-                                      const updatedFields = group.fields.map(
-                                        (f: any) =>
-                                          f.key === field.key
-                                            ? { ...f, bgColor: undefined }
-                                            : f
-                                      );
-                                      handleUpdateFields(updatedFields);
-                                      apiClient.put(`/groups/${groupId}`, {
-                                        fields: updatedFields,
-                                      });
-                                    }}
-                                    title="Default"
-                                  >
-                                    <X size={12} className="text-gray-400" />
-                                  </button>
-                                  {COLOR_PALETTE.map((color) => (
+                                {/* Background Color */}
+                                <div className="space-y-2">
+                                  <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                                    Background
+                                  </label>
+                                  <div className="grid grid-cols-7 gap-1">
+                                    {/* Reset/Default */}
                                     <button
-                                      key={color.bg}
-                                      className={`w-6 h-6 rounded-md border border-black/5 ${
-                                        color.bg
-                                      } ${
-                                        field.bgColor === color.bg
+                                      className={`w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 ${
+                                        !field.bgColor
                                           ? "ring-2 ring-indigo-500 ring-offset-1"
                                           : ""
                                       }`}
@@ -531,7 +542,7 @@ export default function GroupTaskTable({
                                         const updatedFields = group.fields.map(
                                           (f: any) =>
                                             f.key === field.key
-                                              ? { ...f, bgColor: color.bg }
+                                              ? { ...f, bgColor: undefined }
                                               : f
                                         );
                                         handleUpdateFields(updatedFields);
@@ -539,76 +550,111 @@ export default function GroupTaskTable({
                                           fields: updatedFields,
                                         });
                                       }}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* Text Color */}
-                              <div className="space-y-2">
-                                <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
-                                  Text Color
-                                </label>
-                                <div className="grid grid-cols-7 gap-1">
-                                  {/* Reset/Default */}
-                                  <button
-                                    className={`w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 ${
-                                      !field.textColor
-                                        ? "ring-2 ring-indigo-500 ring-offset-1"
-                                        : ""
-                                    }`}
-                                    onClick={() => {
-                                      const updatedFields = group.fields.map(
-                                        (f: any) =>
-                                          f.key === field.key
-                                            ? { ...f, textColor: undefined }
-                                            : f
-                                      );
-                                      handleUpdateFields(updatedFields);
-                                      apiClient.put(`/groups/${groupId}`, {
-                                        fields: updatedFields,
-                                      });
-                                    }}
-                                    title="Default"
-                                  >
-                                    <X size={12} className="text-gray-400" />
-                                  </button>
-                                  {COLOR_PALETTE.map((color) => (
-                                    <button
-                                      key={color.text}
-                                      className={`w-6 h-6 rounded-md border border-black/5 ${
-                                        color.bg
-                                      } flex items-center justify-center ${
-                                        field.textColor === color.text
-                                          ? "ring-2 ring-indigo-500 ring-offset-1"
-                                          : ""
-                                      }`}
-                                      onClick={() => {
-                                        const updatedFields = group.fields.map(
-                                          (f: any) =>
-                                            f.key === field.key
-                                              ? { ...f, textColor: color.text }
-                                              : f
-                                        );
-                                        handleUpdateFields(updatedFields);
-                                        apiClient.put(`/groups/${groupId}`, {
-                                          fields: updatedFields,
-                                        });
-                                      }}
+                                      title="Default"
                                     >
-                                      <span
-                                        className={`text-[10px] font-bold ${color.text}`}
-                                      >
-                                        A
-                                      </span>
+                                      <X size={12} className="text-gray-400" />
                                     </button>
-                                  ))}
+                                    {COLOR_PALETTE.map((color) => (
+                                      <button
+                                        key={color.bg}
+                                        className={`w-6 h-6 rounded-md border border-black/5 ${
+                                          color.bg
+                                        } ${
+                                          field.bgColor === color.bg
+                                            ? "ring-2 ring-indigo-500 ring-offset-1"
+                                            : ""
+                                        }`}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const updatedFields =
+                                            group.fields.map((f: any) =>
+                                              f.key === field.key
+                                                ? { ...f, bgColor: color.bg }
+                                                : f
+                                            );
+                                          handleUpdateFields(updatedFields);
+                                          apiClient.put(`/groups/${groupId}`, {
+                                            fields: updatedFields,
+                                          });
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Text Color */}
+                                <div className="space-y-2">
+                                  <label className="text-xs text-gray-500 font-medium uppercase tracking-wide">
+                                    Text Color
+                                  </label>
+                                  <div className="grid grid-cols-7 gap-1">
+                                    {/* Reset/Default */}
+                                    <button
+                                      className={`w-6 h-6 rounded-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 ${
+                                        !field.textColor
+                                          ? "ring-2 ring-indigo-500 ring-offset-1"
+                                          : ""
+                                      }`}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const updatedFields = group.fields.map(
+                                          (f: any) =>
+                                            f.key === field.key
+                                              ? { ...f, textColor: undefined }
+                                              : f
+                                        );
+                                        handleUpdateFields(updatedFields);
+                                        apiClient.put(`/groups/${groupId}`, {
+                                          fields: updatedFields,
+                                        });
+                                      }}
+                                      title="Default"
+                                    >
+                                      <X size={12} className="text-gray-400" />
+                                    </button>
+                                    {COLOR_PALETTE.map((color) => (
+                                      <button
+                                        key={color.text}
+                                        className={`w-6 h-6 rounded-md border border-black/5 ${
+                                          color.bg
+                                        } flex items-center justify-center ${
+                                          field.textColor === color.text
+                                            ? "ring-2 ring-indigo-500 ring-offset-1"
+                                            : ""
+                                        }`}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const updatedFields =
+                                            group.fields.map((f: any) =>
+                                              f.key === field.key
+                                                ? {
+                                                    ...f,
+                                                    textColor: color.text,
+                                                  }
+                                                : f
+                                            );
+                                          handleUpdateFields(updatedFields);
+                                          apiClient.put(`/groups/${groupId}`, {
+                                            fields: updatedFields,
+                                          });
+                                        }}
+                                      >
+                                        <span
+                                          className={`text-[10px] font-bold ${color.text}`}
+                                        >
+                                          A
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                         <div
                           className="absolute right-0 top-0 bottom-0 w-1 hover:bg-indigo-300 cursor-col-resize z-20"
                           onMouseDown={(e) =>
@@ -656,7 +702,9 @@ export default function GroupTaskTable({
                           <td
                             key={field.key}
                             className={`min-h-10 border-r border-gray-100 last:border-r-0 p-0 relative align-top transition-colors 
-                                ${field.bgColor || ""} ${field.textColor || ""}
+                                ${cellStyle?.bgColor || field.bgColor || ""} ${
+                              cellStyle?.textColor || field.textColor || ""
+                            }
                                 ${
                                   isSelected
                                     ? "ring-2 ring-indigo-500 z-10"
@@ -667,17 +715,24 @@ export default function GroupTaskTable({
                               handleCellClick(e, task._id!, field.key)
                             }
                           >
-                            <CellRenderer
-                              field={field}
-                              value={task[field.key]}
-                              onChange={(val) =>
-                                handleUpdateTask(task._id!, field.key, val)
-                              }
-                              style={cellStyle} // Pass the style
-                            />
+                            <div
+                              className={`w-full h-full min-h-10 flex flex-col ${
+                                cellStyle?.bgColor || ""
+                              }`}
+                            >
+                              <CellRenderer
+                                field={field}
+                                value={task[field.key]}
+                                onChange={(val) =>
+                                  handleUpdateTask(task._id!, field.key, val)
+                                }
+                                style={cellStyle}
+                              />
+                            </div>
                           </td>
                         );
                       })}
+
                     {(!group.fields || group.fields.length === 0) && (
                       <td className="h-10 border-r border-gray-100 p-3 text-sm text-gray-400">
                         Configure fields...

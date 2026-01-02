@@ -78,6 +78,8 @@ export async function PUT(
     // Update fields
     if (body.name) group.name = body.name;
     if (body.fields) group.fields = body.fields;
+    if (body.icon) group.icon = body.icon;
+    if (body.color) group.color = body.color;
 
     await group.save();
 

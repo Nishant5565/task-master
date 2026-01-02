@@ -32,11 +32,22 @@ export function AppSidebar() {
   const [projects, setProjects] = useState<any[]>([]);
   const { data: session } = useSession();
 
-  useEffect(() => {
+  const fetchProjects = () => {
     apiClient
       .get("/projects")
       .then((res) => setProjects(res.data))
       .catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchProjects();
+
+    const handleProjectUpdate = () => fetchProjects();
+    window.addEventListener("project-update", handleProjectUpdate);
+
+    return () => {
+      window.removeEventListener("project-update", handleProjectUpdate);
+    };
   }, []);
 
   return (

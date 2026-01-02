@@ -14,6 +14,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, LogOut, UserPlus, Settings2 } from "lucide-react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -27,6 +37,7 @@ import { Label } from "@/components/ui/label";
 import CellRenderer from "./CellRenderer";
 import { signOut } from "next-auth/react";
 import FieldManager from "./FieldManager";
+import ColorSafelist from "./ColorSafelist";
 import Link from "next/link";
 interface DynamicTableProps {
   projectId: string;
@@ -95,12 +106,29 @@ export default function DynamicTable({ projectId }: DynamicTableProps) {
     }
   };
 
-  const handleDeleteTask = async (id: string) => {
-    setTasks((prev) => prev.filter((t) => t._id !== id));
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+  const [infoAlert, setInfoAlert] = useState<{
+    title: string;
+    description: string;
+  } | null>(null);
+
+  const handleDeleteTask = (id: string) => {
+    setTaskToDelete(id);
+  };
+
+  const executeDeleteTask = async () => {
+    if (!taskToDelete) return;
+
+    // Optimistic Update
+    setTasks((prev) => prev.filter((t) => t._id !== taskToDelete));
+
     try {
-      await apiClient.delete(`/tasks/${id}`);
+      await apiClient.delete(`/tasks/${taskToDelete}`);
     } catch (e) {
       console.error("Failed to delete", e);
+      // Revert if needed, but for now simple log
+    } finally {
+      setTaskToDelete(null);
     }
   };
 
@@ -120,11 +148,17 @@ export default function DynamicTable({ projectId }: DynamicTableProps) {
       await apiClient.post(`/projects/${projectId}/invite`, {
         email: inviteEmail,
       });
-      alert("User added successfully!"); // Simple alert for MVP
+      setInfoAlert({
+        title: "Success",
+        description: "User added successfully!",
+      });
       setIsInviteOpen(false);
       setInviteEmail("");
     } catch (e: any) {
-      alert(e.response?.data?.error || "Failed to invite");
+      setInfoAlert({
+        title: "Error",
+        description: e.response?.data?.error || "Failed to invite",
+      });
     }
   };
 
@@ -151,6 +185,7 @@ export default function DynamicTable({ projectId }: DynamicTableProps) {
 
   return (
     <div className="flex flex-col h-full bg-background/50">
+      <ColorSafelist />
       <div className="flex items-center justify-between px-8 py-6 border-b bg-background">
         <div className="flex items-center gap-4">
           <div className="space-y-1">
@@ -226,7 +261,7 @@ export default function DynamicTable({ projectId }: DynamicTableProps) {
         <div className="rounded-md border bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-b">
+              <TableRow className="hover:bg-transparent border-b sticky top-0">
                 {project.fields.map((field: any) => (
                   <TableHead
                     key={field.key}

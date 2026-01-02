@@ -6,12 +6,24 @@ import User from "./models/User";
 import bcrypt from "bcryptjs";
 import { authConfig } from "./auth.config";
 
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import clientPromise from "./lib/mongodb";
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
+  adapter: MongoDBAdapter(clientPromise),
+  session: {
+    strategy: "jwt", // We are using JWT strategy, but Adapter usually defaults to database sessions.
+    // If we want to persist users but keep using JWT for session tokens (less DB hits), we set "jwt".
+    // If we use "database", NextAuth manages sessions in DB.
+    // Given the previous code didn't use adapter, it was JWT.
+    // Let's stick to JWT but use Adapter for User persistence.
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       credentials: {
@@ -41,4 +53,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  callbacks: {
+    // We need to ensure the user ID is passed to the session
+    // When using JWT strategy with Adapter, the user is retrieved from DB but token is used.
+    async session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+  },
 });

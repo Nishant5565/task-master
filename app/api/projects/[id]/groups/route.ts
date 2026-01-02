@@ -3,6 +3,28 @@ import connectToDatabase from "@/lib/db";
 import TaskGroup from "@/models/TaskGroup";
 import { auth } from "@/auth";
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+    await connectToDatabase();
+
+    const groups = await TaskGroup.find({ projectId: id }).sort({ order: 1 });
+    return NextResponse.json(groups);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch groups" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
