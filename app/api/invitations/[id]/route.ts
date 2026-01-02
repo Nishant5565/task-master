@@ -8,14 +8,14 @@ import { auth } from "@/auth";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string; action: string }> } // action: accept | decline
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { id, action } = await params; // This file handles /api/invitations/[id]/[action]
+    const { id } = await params; // This file handles /api/invitations/[id]/[action]
     // Actually, Next.js folder structure for this would be /api/invitations/[id]/[action]/route.ts
     // Or I can use POST body to specify action?
     // Let's use separate files or a single Dynamic Route [id]/route.ts and handle logic based on body?
