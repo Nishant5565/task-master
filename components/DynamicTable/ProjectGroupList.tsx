@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import apiClient from "@/lib/axios";
 import { Button } from "@/components/ui/button";
-import { Plus, Folder, ArrowRight, Trash2 } from "lucide-react";
+import { Plus, Folder, ArrowRight, Trash2, LogOut } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,18 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useSession } from "next-auth/react";
 
 interface ProjectGroupListProps {
   projectId: string;
@@ -34,6 +46,12 @@ export default function ProjectGroupList({ projectId }: ProjectGroupListProps) {
   // Group Creation State
   const [isGroupOpen, setIsGroupOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+
+  // Alert State
+  const { data: session } = useSession();
+  const [activeAlert, setActiveAlert] = useState<"delete" | "leave" | null>(
+    null
+  );
 
   const fetchData = async () => {
     try {
@@ -65,28 +83,6 @@ export default function ProjectGroupList({ projectId }: ProjectGroupListProps) {
     }
   };
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useSession } from "next-auth/react";
-import { LogOut } from "lucide-react";
-
-// ... Inside component ...
-export default function ProjectGroupList({ projectId }: ProjectGroupListProps) {
-  // ... existing state ...
-  const { data: session } = useSession();
-  const [activeAlert, setActiveAlert] = useState<"delete" | "leave" | null>(null);
-
-  // ... existing hooks ...
-
   const handleProjectAction = async () => {
     if (!activeAlert) return;
 
@@ -99,14 +95,28 @@ export default function ProjectGroupList({ projectId }: ProjectGroupListProps) {
       router.push("/dashboard");
     } catch (e) {
       console.error(`Failed to ${activeAlert} project`, e);
-      alert(`Failed to ${activeAlert} project`);
+      // alert(`Failed to ${activeAlert} project`);
     } finally {
-        setActiveAlert(null);
+      setActiveAlert(null);
     }
   };
 
-  // ... existing render ...
-  const isOwner = session?.user?.id === project?.ownerId;
+  if (loading) {
+    return <div className="p-8">Loading...</div>;
+  }
+
+  if (!project) {
+    return <div className="p-8">Project not found</div>;
+  }
+
+  // isOwner logic - check if ownerId is an object or string
+  // Based on your other files, it seems ownerId can be populated.
+  // We'll check both cases safely.
+  const ownerId =
+    typeof project.ownerId === "string"
+      ? project.ownerId
+      : project.ownerId?._id;
+  const isOwner = session?.user?.id === ownerId;
 
   return (
     <div className="flex flex-col h-full bg-background/50 p-8 space-y-8">
@@ -118,48 +128,55 @@ export default function ProjectGroupList({ projectId }: ProjectGroupListProps) {
           </p>
         </div>
         <div className="flex gap-2">
-            <AlertDialog open={!!activeAlert} onOpenChange={(open) => !open && setActiveAlert(null)}>
-                <AlertDialogTrigger asChild>
-                  {isOwner ? (
-                      <Button
-                        variant="outline"
-                        className="border-red-500/50 text-red-500 hover:text-red-600 hover:bg-red-50 hover:border-red-500"
-                        onClick={() => setActiveAlert("delete")}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete Project
-                      </Button>
-                  ) : (
-                      <Button
-                        variant="outline"
-                        className="text-gray-600"
-                        onClick={() => setActiveAlert("leave")}
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Leave Project
-                      </Button>
-                  )}
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {activeAlert === "delete" ? "Delete Project?" : "Leave Project?"}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {activeAlert === "delete" 
-                                ? "Are you sure you want to delete this project? This will permanently delete all tasks and groups within it. This action cannot be undone."
-                                : "Are you sure you want to leave this project? You will lose access to all tasks and groups."
-                            }
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleProjectAction} className="bg-red-600 hover:bg-red-700">
-                             {activeAlert === "delete" ? "Delete" : "Leave"}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+          <AlertDialog
+            open={!!activeAlert}
+            onOpenChange={(open) => !open && setActiveAlert(null)}
+          >
+            <AlertDialogTrigger asChild>
+              {isOwner ? (
+                <Button
+                  variant="outline"
+                  className="border-red-500/50 text-red-500 hover:text-red-600 hover:bg-red-50 hover:border-red-500"
+                  onClick={() => setActiveAlert("delete")}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Project
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="text-gray-600"
+                  onClick={() => setActiveAlert("leave")}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Leave Project
+                </Button>
+              )}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {activeAlert === "delete"
+                    ? "Delete Project?"
+                    : "Leave Project?"}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {activeAlert === "delete"
+                    ? "Are you sure you want to delete this project? This will permanently delete all tasks and groups within it. This action cannot be undone."
+                    : "Are you sure you want to leave this project? You will lose access to all tasks and groups."}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleProjectAction}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {activeAlert === "delete" ? "Delete" : "Leave"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <Button onClick={() => setIsGroupOpen(true)} size="lg">
             <Plus className="w-4 h-4 mr-2" /> New Group
