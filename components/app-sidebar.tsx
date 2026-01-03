@@ -83,7 +83,7 @@ export function AppSidebar() {
                   className="flex aspect-square size-10 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20 text-white overflow-hidden"
                 >
                   <img
-                    src="https://cdn.myotaku.world/media-1767382263875-dojoit.png-1767382263875.png"
+                    src="https://cdn.brandure.online/dojoit.webp"
                     alt="dojoit"
                   />
                 </motion.div>
