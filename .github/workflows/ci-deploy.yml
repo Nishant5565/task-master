@@ -1,0 +1,45 @@
+name: CI → Coolify Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Bun (latest stable)
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # 3️⃣ Install dependencies (lockfile respected)
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # 4️⃣ Lint (optional but highly recommended)
+      # Comment this out if you don't have lint
+      - name: Lint
+        run: bun run lint
+        continue-on-error: false
+
+      # 5️⃣ Build (must match Docker build step)
+      - name: Build
+        run: bun run build
+
+      # 6️⃣ Trigger Coolify deployment
+      - name: Deploy via Coolify webhook
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}"
