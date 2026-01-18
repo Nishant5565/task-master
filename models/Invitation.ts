@@ -36,7 +36,6 @@ const InvitationSchema = new mongoose.Schema(
 
 // Index for faster lookups
 InvitationSchema.index({ projectId: 1, email: 1 });
-InvitationSchema.index({ token: 1 });
 
 const Invitation =
   mongoose.models.Invitation || mongoose.model("Invitation", InvitationSchema);
